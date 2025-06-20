@@ -10,6 +10,7 @@ if [[ "$(uname -m)" == "arm64" ]]; then
     arch_name="macos-silicon"
 else
     arch_name="macos-intel"
+fi
 
 # Create temp folder
 temp_folder=$(mktemp -d)
@@ -19,8 +20,6 @@ release_info=$(curl -s "https://api.github.com/repos/$owner/$repo/releases/lates
 
 # Extract download URL for the zip file containing "RLC" in its name
 download_url=$(echo "$release_info" | grep -o '"browser_download_url": ".${arch_name}.*\.zip"' | cut -d '"' -f 4)
-
-echo "DOWNLOAD URL: '$download_url'"
 
 # Check if download URL is empty (i.e., if no matching zip file was found)
 if [ -z "$download_url" ]; then
