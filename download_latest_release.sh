@@ -12,25 +12,17 @@ else
     arch_name="macos-intel"
 fi
 
-echo "$arch_name"
-
 # Create temp folder
 temp_folder=$(mktemp -d)
-
-echo "temp folder created"
 
 # Get the latest release information
 release_info=$(curl -s "https://api.github.com/repos/$owner/$repo/releases/latest")
 
-echo "release info: '$release_info'"
-
-# Extract download URL for the zip file containing "RLC" in its name
+# Extract download URL for the zip file containing desired architecture in its name
 download_url=$(echo "$release_info" \
   | grep '"browser_download_url":' \
   | grep "$arch_name" \
   | cut -d '"' -f 4)
-
-echo "DOWNLOAD URL: '$download_url'"
 
 # Check if download URL is empty (i.e., if no matching zip file was found)
 if [ -z "$download_url" ]; then
@@ -40,9 +32,8 @@ fi
 
 # Extract file name from the download URL
 filename=$(basename "$download_url")
-echo "Extracted file name: '$filename'"
 
-# Download the zip file to the temp folder within the Downloads folder
+# Download the zip file to the temp folder
 curl -sSL "$download_url" -o "$temp_folder/$filename"
 
 # Unzip the downloaded file to the temp folder
