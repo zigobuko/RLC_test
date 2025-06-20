@@ -17,13 +17,17 @@ echo "$arch_name"
 # Create temp folder
 temp_folder=$(mktemp -d)
 
+echo "temp folder created"
+
 # Get the latest release information
 release_info=$(curl -s "https://api.github.com/repos/$owner/$repo/releases/latest")
+
+echo "release info: '$release_info'"
 
 # Extract download URL for the zip file containing "RLC" in its name
 download_url=$(echo "$release_info" | grep -o '"browser_download_url": ".${arch_name}.*\.zip"' | cut -d '"' -f 4)
 
-echo "DOLNLOAD URL: '$download_url'"
+echo "DOWNLOAD URL: '$download_url'"
 
 # Check if download URL is empty (i.e., if no matching zip file was found)
 if [ -z "$download_url" ]; then
