@@ -12,6 +12,8 @@ else
     arch_name="macos-intel"
 fi
 
+echo "$arch_name"
+
 # Create temp folder
 temp_folder=$(mktemp -d)
 
