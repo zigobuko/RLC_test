@@ -11,12 +11,12 @@ temp_folder=$(mktemp -d)
 # Get the latest release information
 release_info=$(curl -s "https://api.github.com/repos/$owner/$repo/releases/latest")
 
-# Extract download URL for the zip file containing "RLC" in its name
-download_url=$(echo "$release_info" | grep -o '"browser_download_url": ".*RLC.*\.zip"' | cut -d '"' -f 4)
+# Extract download URL for the zip file containing "macos-silicon" in its name
+download_url=$(echo "$release_info" | grep -o '"browser_download_url": ".*macos-silicon.*\.zip"' | cut -d '"' -f 4)
 
 # Check if download URL is empty (i.e., if no matching zip file was found)
 if [ -z "$download_url" ]; then
-    echo "No zip file containing 'RLC' in its name found in the latest release."
+    echo "No zip file containing 'macos-silicon' in its name found in the latest release."
     exit 1
 fi
 
