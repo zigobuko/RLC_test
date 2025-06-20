@@ -3,7 +3,7 @@
 # Define GitHub repository owner and name
 owner="zigobuko"
 repo="RLC_test"
-os_arch="macos-silicon"
+os_arch="HUJ"
 pass=$1
 
 # Create temp folder
