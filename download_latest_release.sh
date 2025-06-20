@@ -17,7 +17,7 @@ download_url=$(echo "$release_info" | grep -o '"browser_download_url": ".*${os_a
 
 # Check if download URL is empty (i.e., if no matching zip file was found)
 if [ -z "$download_url" ]; then
-    echo "No zip file containing 'macos-silicon' in its name found in the latest release."
+    echo "No zip file containing '$os_arch' in its name found in the latest release."
     exit 1
 fi
 
