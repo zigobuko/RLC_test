@@ -22,7 +22,7 @@ download_url=$(echo "$release_info" | grep -o '"browser_download_url": ".${arch_
 
 # Check if download URL is empty (i.e., if no matching zip file was found)
 if [ -z "$download_url" ]; then
-    echo "No zip file containing '$arch_name' in its name found in the latest release."
+    echo "No zip file for '$arch_name' found in the latest release."
     exit 1
 fi
 
