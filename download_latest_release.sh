@@ -13,7 +13,7 @@ temp_folder=$(mktemp -d)
 release_info=$(curl -s "https://api.github.com/repos/$owner/$repo/releases/latest")
 
 # Extract download URL for the zip file containing "macos-silicon" in its name
-download_url=$(echo "$release_info" | grep -o '"browser_download_url": ".*$os_arch.*\.zip"' | cut -d '"' -f 4)
+download_url=$(echo "$release_info" | grep -o '"browser_download_url": ".*macos-silicon.*\.zip"' | cut -d '"' -f 4)
 
 # Check if download URL is empty (i.e., if no matching zip file was found)
 if [ -z "$download_url" ]; then
