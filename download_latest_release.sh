@@ -40,6 +40,7 @@ fi
 
 # Extract file name from the download URL
 filename=$(basename "$download_url")
+echo "Extracted file name: '$filename'"
 
 # Download the zip file to the temp folder within the Downloads folder
 curl -sSL "$download_url" -o "$temp_folder/$filename"
