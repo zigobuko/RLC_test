@@ -25,7 +25,10 @@ release_info=$(curl -s "https://api.github.com/repos/$owner/$repo/releases/lates
 echo "release info: '$release_info'"
 
 # Extract download URL for the zip file containing "RLC" in its name
-download_url=$(echo "$release_info" | grep -Eo "browser_download_url\": \"[^\"]*${arch_name}[^\"]*\.zip" | cut -d '"' -f 4)
+download_url=$(echo "$release_info" \
+  | grep '"browser_download_url":' \
+  | grep "$arch_name" \
+  | cut -d '"' -f 4)
 
 echo "DOWNLOAD URL: '$download_url'"
 
