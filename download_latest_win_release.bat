@@ -1,69 +1,63 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal EnableDelayedExpansion
 
-:: Set GitHub repository info
-set "OWNER=zigobuko"
-set "REPO=RLC_test"
+:: Config
+set "owner=zigobuko"
+set "repo=RLC_test"
 
-:: File for storing JSON response
-set "TEMP_FILE=%TEMP%\latest_release.json"
+:: Get architecture-specific filename (if needed, adjust this logic)
+set "keyword=win"
+set "ext=.exe"
 
-:: Download latest release info
-powershell -Command "(Invoke-WebRequest -Uri https://api.github.com/repos/%OWNER%/%REPO%/releases/latest -UseBasicParsing).Content" > "%TEMP_FILE%"
+:: Query latest release info
+curl -s https://api.github.com/repos/%owner%/%repo%/releases/latest > "%TEMP%\release.json"
 
-:: Look for the download URL of a Windows .exe (with 'win' in name)
+:: Parse the download URL
 set "download_url="
-for /f "tokens=*" %%A in ('findstr /i "browser_download_url" "%TEMP_FILE%" ^| findstr /i "win" ^| findstr /i ".exe"') do (
+for /f "usebackq tokens=2 delims=: " %%A in (`findstr /i "browser_download_url" "%TEMP%\release.json" ^| findstr /i "%keyword%" ^| findstr /i "%ext%"`) do (
     set "line=%%A"
-    for /f "tokens=2 delims=:" %%B in ("!line!") do (
-        set "url_part=%%B"
-        set "url=!url_part:~2,-2!"
-        set "download_url=!url!"
-    )
+    set "line=!line:~1,-1!"  :: strip quotes and comma
+    set "download_url=!line!"
 )
 
-:: Check if download URL was found
+:: Check if URL was found
 if not defined download_url (
     echo No file for Windows found in the latest release.
-    del "%TEMP_FILE%" >nul 2>&1
-    timeout /t 5 >nul
-    exit /b 1
+    del "%TEMP%\release.json"
+    goto :eof
 )
 
 :: Extract filename from URL
-for %%A in ("%download_url%") do set "filename=%%~nxA"
-set "dest=%USERPROFILE%\Downloads\%filename%"
+for %%F in (!download_url!) do set "filename=%%~nxF"
 
-:: Check if file already exists
+:: Check if file already exists in Downloads
+set "dest=%USERPROFILE%\Downloads\%filename%"
 if exist "%dest%" (
     echo File %filename% already exists in Downloads. Download was canceled.
-    del "%TEMP_FILE%" >nul 2>&1
-    timeout /t 5 >nul
-    exit /b 0
+    del "%TEMP%\release.json"
+    goto :eof
 )
 
 :: Download the file
 echo Downloading %filename%...
-powershell -Command "Invoke-WebRequest -Uri '%download_url%' -OutFile '%dest%'"
+powershell -NoProfile -Command "Invoke-WebRequest -Uri '!download_url!' -OutFile '%dest%'"
 
-:: Confirm download
-if exist "%dest%" (
-    echo File %filename% has been downloaded successfully.
-) else (
+:: Check if download succeeded
+if not exist "%dest%" (
     echo Failed to download the file.
-    del "%TEMP_FILE%" >nul 2>&1
-    timeout /t 5 >nul
-    exit /b 1
+    del "%TEMP%\release.json"
+    goto :eof
 )
 
-:: Clean up temp JSON file
-del "%TEMP_FILE%" >nul 2>&1
-
-:: Open the downloaded SFX .exe file
+:: Run the file
+echo Launching %filename%...
 start "" "%dest%"
 
-:: Delete this script after short delay to allow start command to execute
-timeout /t 2 >nul
-del "%~f0"
+:: Clean up
+del "%TEMP%\release.json"
+echo File %filename% has been downloaded successfully.
 
-exit /b 0
+:: Self-delete the script
+echo Deleting this script...
+start "" cmd /c del "%~f0"
+exit /b
