@@ -2,8 +2,8 @@
 setlocal enabledelayedexpansion
 
 :: Define GitHub repository
-set "owner=zigobuko"
-set "repo=RLC_test"
+set "owner=user_name"
+set "repo=repo_name"
 
 :: Create temp folder
 set "temp_dir=%TEMP%\myAppDownload_%RANDOM%"
@@ -12,13 +12,21 @@ mkdir "%temp_dir%" >nul 2>&1
 :: Get latest release JSON
 curl -s https://api.github.com/repos/%owner%/%repo%/releases/latest > "%temp_dir%\release.json"
 
-:: Extract download URL for Windows (.exe containing "win")
+:: Extract download URL containing "win"
 set "download_url="
-for /f "tokens=2 delims=:," %%A in ('findstr /C:"\"browser_download_url\":" "%temp_dir%\release.json" ^| findstr /I "win"') do (
-    set "url=%%~A"
-    set "url=!url:~1,-1!" 
-    set "download_url=!url!"
+for /f "usebackq tokens=*" %%A in ("%temp_dir%\release.json") do (
+    echo %%A | findstr /C:"\"browser_download_url\"" | findstr /I "win" >nul
+    if !errorlevel! == 0 (
+        for /f "tokens=2 delims=:" %%B in ("%%A") do (
+            set "line=%%B"
+            set "line=!line:~1!"
+            set "download_url=!line:\"",=!"
+            goto :got_url
+        )
+    )
 )
+
+:got_url
 
 :: Clean up JSON file
 del "%temp_dir%\release.json"
@@ -56,7 +64,7 @@ if exist "%downloads_dir%\%filename%" (
 :: Cleanup
 rd /s /q "%temp_dir%"
 
-:: Self-delete the script after launch
+:: Self-delete the script
 start "" cmd /c del "%~f0"
 
 exit /b
