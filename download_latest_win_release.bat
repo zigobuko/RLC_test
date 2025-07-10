@@ -2,8 +2,8 @@
 setlocal enabledelayedexpansion
 
 :: Define GitHub repository
-set "owner=user_name"
-set "repo=repo_name"
+set "owner=zigobuko"
+set "repo=RLC_test"
 
 :: Create temp folder
 set "temp_dir=%TEMP%\myAppDownload_%RANDOM%"
