@@ -6,11 +6,7 @@ set "repo=RLC_test"
 set "filename="
 
 :: Use PowerShell to get the download URL of the latest Windows .exe release
-for /f "usebackq delims=" %%A in (`powershell -NoProfile -Command "
-    $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/%owner%/%repo%/releases/latest';
-    $asset = $r.assets | Where-Object { $_.name -like '*win*' -and $_.name -like '*.exe' } | Select-Object -First 1;
-    if (-not $asset) { Write-Output 'ERROR_NO_FILE' } else { Write-Output $asset.browser_download_url }
-"`) do set "download_url=%%A"
+for /f "usebackq delims=" %%A in (`powershell -NoProfile -Command "$r = Invoke-RestMethod -Uri 'https://api.github.com/repos/%owner%/%repo%/releases/latest'; $asset = $r.assets | Where-Object { $_.name -like '*win*' -and $_.name -like '*.exe' } | Select-Object -First 1; if (-not $asset) { Write-Output 'ERROR_NO_FILE' } else { Write-Output $asset.browser_download_url }"`) do set "download_url=%%A"
 
 :: Check if PowerShell failed to find the file
 if "%download_url%"=="ERROR_NO_FILE" (
