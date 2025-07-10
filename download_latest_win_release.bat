@@ -55,7 +55,9 @@ curl -sSL "!download_url!" -o "!target_file!"
 if exist "!target_file!" (
     echo Downloaded successfully.
     echo Launching...
-    start "" "!target_file!"
+    pushd "%downloads_dir%"
+    start "" "%filename%"
+    popd
 ) else (
     echo Download failed.
 )
