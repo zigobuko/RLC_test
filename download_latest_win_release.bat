@@ -56,4 +56,7 @@ if exist "%downloads_dir%\%filename%" (
 :: Cleanup
 rd /s /q "%temp_dir%"
 
+:: Self-delete the script after launch
+start "" cmd /c del "%~f0"
+
 exit /b
