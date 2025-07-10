@@ -1,63 +1,49 @@
 @echo off
-setlocal EnableDelayedExpansion
+setlocal enabledelayedexpansion
 
-:: Config
+:: GitHub repo
 set "owner=zigobuko"
 set "repo=RLC_test"
-set "keyword=win"
-set "ext=.exe"
 
-:: Query latest release JSON
-curl -s https://api.github.com/repos/%owner%/%repo%/releases/latest > "%TEMP%\release.json"
+echo Fetching latest release info...
 
-:: Parse JSON for the download URL of the Windows asset
-set "download_url="
-for /f "usebackq tokens=2 delims=: " %%A in (`findstr /i "browser_download_url" "%TEMP%\release.json" ^| findstr /i "%keyword%" ^| findstr /i "%ext%"`) do (
-    set "line=%%A"
-    set "line=!line:~1,-1!"      :: strip leading '"' and trailing '",'
-    set "download_url=!line!"
+:: Get latest release info via PowerShell and extract the download URL
+for /f "usebackq delims=" %%A in (`powershell -Command ^
+    "$r = Invoke-RestMethod -Uri 'https://api.github.com/repos/%owner%/%repo%/releases/latest'; ^
+    $url = $r.assets | Where-Object { $_.name -like '*win*' -and $_.name -like '*.exe' } | Select-Object -ExpandProperty browser_download_url; ^
+    if (!$url) { Write-Output 'ERROR' } else { Write-Output $url }"`) do (
+    set "download_url=%%A"
 )
 
-:: Check if URL was found
-if not defined download_url (
+if "%download_url%"=="ERROR" (
     echo No file for Windows found in the latest release.
-    del "%TEMP%\release.json"
-    goto :EOF
+    exit /b 1
 )
 
-:: Extract filename from URL
-for %%F in (!download_url!) do set "filename=%%~nxF"
+:: Get the filename
+for %%F in ("%download_url%") do set "filename=%%~nxF"
+set "target_path=%USERPROFILE%\Downloads\%filename%"
 
-:: Destination path in Downloads
-set "dest=%USERPROFILE%\Downloads\%filename%"
-
-:: If file exists, cancel download
-if exist "%dest%" (
+:: Check if file already exists
+if exist "%target_path%" (
     echo File %filename% already exists in Downloads. Download was canceled.
-    del "%TEMP%\release.json"
-    goto :EOF
+    exit /b 0
 )
 
-:: Download the file
 echo Downloading %filename%...
-powershell -NoProfile -Command "Invoke-WebRequest -Uri '!download_url!' -OutFile '%dest%'"
 
-:: Verify download
-if not exist "%dest%" (
+:: Download the file using PowerShell
+powershell -Command "Invoke-WebRequest -Uri '%download_url%' -OutFile '%target_path%'"
+
+if not exist "%target_path%" (
     echo Failed to download the file.
-    del "%TEMP%\release.json"
-    goto :EOF
+    exit /b 1
 )
 
-:: Run the file
-echo Launching %filename%...
-start "" "%dest%"
-
-:: Clean up
-del "%TEMP%\release.json"
 echo File %filename% has been downloaded successfully.
 
-:: Self-delete this script
-echo Deleting this script...
-del "%~f0"&exit
-exit /b
+:: Run the downloaded .exe (password will be entered manually by user)
+start "" "%target_path%"
+
+:: Delete this script
+del "%~f0"
