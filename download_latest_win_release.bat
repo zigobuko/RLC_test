@@ -1,49 +1,46 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
-:: GitHub repo
 set "owner=zigobuko"
 set "repo=RLC_test"
+set "filename="
 
-echo Fetching latest release info...
-
-:: Get latest release info via PowerShell and extract the download URL
-for /f "usebackq delims=" %%A in (`powershell -Command ^
+:: Use PowerShell to get the download URL of the latest Windows .exe release
+for /f "usebackq delims=" %%A in (`powershell -NoProfile -Command ^
     "$r = Invoke-RestMethod -Uri 'https://api.github.com/repos/%owner%/%repo%/releases/latest'; ^
-    $url = $r.assets | Where-Object { $_.name -like '*win*' -and $_.name -like '*.exe' } | Select-Object -ExpandProperty browser_download_url; ^
-    if (!$url) { Write-Output 'ERROR' } else { Write-Output $url }"`) do (
-    set "download_url=%%A"
-)
+     $asset = $r.assets | Where-Object { $_.name -like '*win*' -and $_.name -like '*.exe' } | Select-Object -First 1; ^
+     if (-not $asset) { Write-Output 'ERROR_NO_FILE' } else { Write-Output $asset.browser_download_url }" ^
+`) do set "download_url=%%A"
 
-if "%download_url%"=="ERROR" (
+:: Check if PowerShell failed to find the file
+if "%download_url%"=="ERROR_NO_FILE" (
     echo No file for Windows found in the latest release.
-    exit /b 1
+    goto :EOF
 )
 
-:: Get the filename
+:: Extract filename from URL
 for %%F in ("%download_url%") do set "filename=%%~nxF"
-set "target_path=%USERPROFILE%\Downloads\%filename%"
 
-:: Check if file already exists
-if exist "%target_path%" (
+:: Check if file already exists in Downloads folder
+set "dest=%USERPROFILE%\Downloads\%filename%"
+if exist "%dest%" (
     echo File %filename% already exists in Downloads. Download was canceled.
-    exit /b 0
+    goto :EOF
 )
 
-echo Downloading %filename%...
+:: Download the file
+powershell -NoProfile -Command "Invoke-WebRequest -Uri '%download_url%' -OutFile '%dest%'"
 
-:: Download the file using PowerShell
-powershell -Command "Invoke-WebRequest -Uri '%download_url%' -OutFile '%target_path%'"
-
-if not exist "%target_path%" (
+if exist "%dest%" (
+    echo File %filename% has been downloaded successfully.
+) else (
     echo Failed to download the file.
-    exit /b 1
+    goto :EOF
 )
 
-echo File %filename% has been downloaded successfully.
+:: Run the downloaded file (e.g., self-extracting archive)
+start "" "%dest%"
 
-:: Run the downloaded .exe (password will be entered manually by user)
-start "" "%target_path%"
-
-:: Delete this script
+:: Delete this script after launching
+cd /d "%~dp0"
 del "%~f0"
