@@ -1,42 +1,59 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
-set "owner=zigobuko"
-set "repo=RLC_test"
-set "filename="
+:: Define GitHub repository
+set "owner=user_name"
+set "repo=repo_name"
 
-:: Use PowerShell to get the download URL of the latest Windows .exe release
-for /f "usebackq delims=" %%A in (`powershell -NoProfile -Command "$r = Invoke-RestMethod -Uri 'https://api.github.com/repos/%owner%/%repo%/releases/latest'; $asset = $r.assets | Where-Object { $_.name -like '*win*' -and $_.name -like '*.exe' } | Select-Object -First 1; if (-not $asset) { Write-Output 'ERROR_NO_FILE' } else { Write-Output $asset.browser_download_url }"`) do set "download_url=%%A"
+:: Create temp folder
+set "temp_dir=%TEMP%\myAppDownload_%RANDOM%"
+mkdir "%temp_dir%" >nul 2>&1
 
-:: Check if PowerShell failed to find the file
-if "%download_url%"=="ERROR_NO_FILE" (
-    echo No file for Windows found in the latest release.
-    goto :EOF
+:: Get latest release JSON
+curl -s https://api.github.com/repos/%owner%/%repo%/releases/latest > "%temp_dir%\release.json"
+
+:: Extract download URL for Windows (.exe containing "win")
+set "download_url="
+for /f "tokens=2 delims=:," %%A in ('findstr /C:"\"browser_download_url\":" "%temp_dir%\release.json" ^| findstr /I "win"') do (
+    set "url=%%~A"
+    set "url=!url:~1,-1!" 
+    set "download_url=!url!"
 )
 
-:: Extract filename from URL
-for %%F in (%download_url%) do set "filename=%%~nxF"
+:: Clean up JSON file
+del "%temp_dir%\release.json"
 
-:: Check if file already exists in Downloads folder
-set "dest=%USERPROFILE%\Downloads\%filename%"
-if exist "%dest%" (
+:: Check if download URL was found
+if not defined download_url (
+    echo No file for Windows found in the latest release.
+    rd /s /q "%temp_dir%"
+    exit /b 1
+)
+
+:: Extract filename
+for %%F in ("!download_url!") do set "filename=%%~nxF"
+
+:: Check if file already exists in Downloads
+set "downloads_dir=%USERPROFILE%\Downloads"
+if exist "%downloads_dir%\%filename%" (
     echo File %filename% already exists in Downloads. Download was canceled.
-    goto :EOF
+    rd /s /q "%temp_dir%"
+    exit /b 0
 )
 
 :: Download the file
-powershell -NoProfile -Command "Invoke-WebRequest -Uri '%download_url%' -OutFile '%dest%'"
+echo Downloading %filename%...
+curl -sSL "!download_url!" -o "%downloads_dir%\%filename%"
 
-if exist "%dest%" (
+if exist "%downloads_dir%\%filename%" (
     echo File %filename% has been downloaded successfully.
+    echo Launching...
+    start "" "%downloads_dir%\%filename%"
 ) else (
-    echo Failed to download the file.
-    goto :EOF
+    echo Download failed.
 )
 
-:: Run the downloaded file (e.g., self-extracting archive)
-start "" "%dest%"
+:: Cleanup
+rd /s /q "%temp_dir%"
 
-:: Delete this script after launching
-cd /d "%~dp0"
-del "%~f0"
+exit /b
