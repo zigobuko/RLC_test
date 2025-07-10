@@ -2,38 +2,33 @@
 setlocal enabledelayedexpansion
 
 :: Define GitHub repository
-set "owner=zigobuko"
-set "repo=RLC_test"
+set "owner=user_name"
+set "repo=repo_name"
 
 :: Create temp folder
 set "temp_dir=%TEMP%\myAppDownload_%RANDOM%"
 mkdir "%temp_dir%" >nul 2>&1
 
-:: Get latest release JSON
+:: Download latest release info
 curl -s https://api.github.com/repos/%owner%/%repo%/releases/latest > "%temp_dir%\release.json"
 
-:: Extract download URL containing "win"
+:: Find first .exe containing "win"
 set "download_url="
-for /f "usebackq tokens=*" %%A in ("%temp_dir%\release.json") do (
-    echo %%A | findstr /C:"\"browser_download_url\"" | findstr /I "win" >nul
-    if !errorlevel! == 0 (
-        for /f "tokens=2 delims=:" %%B in ("%%A") do (
-            set "line=%%B"
-            set "line=!line:~1!"
-            set "download_url=!line:\"",=!"
-            goto :got_url
-        )
-    )
+for /f "delims=" %%A in ('findstr /i "browser_download_url.*win.*\.exe" "%temp_dir%\release.json"') do (
+    set "line=%%A"
+    set "line=!line:*https://=https://!"
+    set "download_url=!line:"=!"
+    goto found_url
 )
 
-:got_url
+:found_url
 
-:: Clean up JSON file
+:: Clean up JSON
 del "%temp_dir%\release.json"
 
 :: Check if download URL was found
 if not defined download_url (
-    echo No file for Windows found in the latest release.
+    echo No Windows EXE found in latest release.
     rd /s /q "%temp_dir%"
     exit /b 1
 )
@@ -41,22 +36,26 @@ if not defined download_url (
 :: Extract filename
 for %%F in ("!download_url!") do set "filename=%%~nxF"
 
-:: Check if file already exists in Downloads
+:: Target path
 set "downloads_dir=%USERPROFILE%\Downloads"
-if exist "%downloads_dir%\%filename%" (
-    echo File %filename% already exists in Downloads. Download was canceled.
+set "target_file=%downloads_dir%\%filename%"
+
+:: Check if file exists
+if exist "!target_file!" (
+    echo File already exists in Downloads: !filename!
     rd /s /q "%temp_dir%"
     exit /b 0
 )
 
-:: Download the file
-echo Downloading %filename%...
-curl -sSL "!download_url!" -o "%downloads_dir%\%filename%"
+:: Download EXE
+echo Downloading !filename!...
+curl -sSL "!download_url!" -o "!target_file!"
 
-if exist "%downloads_dir%\%filename%" (
-    echo File %filename% has been downloaded successfully.
+:: Check and launch
+if exist "!target_file!" (
+    echo Downloaded successfully.
     echo Launching...
-    start "" "%downloads_dir%\%filename%"
+    start "" "!target_file!"
 ) else (
     echo Download failed.
 )
@@ -64,7 +63,7 @@ if exist "%downloads_dir%\%filename%" (
 :: Cleanup
 rd /s /q "%temp_dir%"
 
-:: Self-delete the script
+:: Self-delete this script
 start "" cmd /c del "%~f0"
 
 exit /b
