@@ -7,10 +7,10 @@ pass=$1
 
 # Detect architecture (Silicon / Intel)
 if [[ "$(uname -m)" == "arm64" ]]; then
-    arch_name="macos-silicon"
+    arch_name="mac-silicon"
     echo "Downloading mac-silicon version."
 else
-    arch_name="macos-intel"
+    arch_name="mac-intel"
     echo "Downloading mac-intel version."
 fi
 
