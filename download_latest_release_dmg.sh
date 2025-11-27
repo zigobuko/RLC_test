@@ -8,10 +8,10 @@ pass=$1
 # Detect architecture (Silicon / Intel)
 if [[ "$(uname -m)" == "arm64" ]]; then
     arch_name="macos-silicon"
-    echo "Downloading macos-silicon version."
+    echo "Downloading mac-silicon version."
 else
     arch_name="macos-intel"
-    echo "Downloading macos-intel version."
+    echo "Downloading mac-intel version."
 fi
 
 # Create temp folder
