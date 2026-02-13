@@ -72,8 +72,6 @@ if not defined sevenzip_path (
     )
 )
 
-:: Trim spaces (if any)
-set "sevenzip_path=%sevenzip_path:~0,-0%"
 :: ---------------------------------------------------
 
 :: Check and process
@@ -119,3 +117,4 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
+
