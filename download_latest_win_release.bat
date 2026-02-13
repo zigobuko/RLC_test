@@ -84,13 +84,13 @@ if exist "!target_file!" (
 
         if defined archive_password (
             :: Password provided → silent extraction
-            "!sevenzip_path!" x "!target_file!" -p"!archive_password!" -o"%downloads_dir%" -y -bs0
+            "!sevenzip_path!" x "!target_file!" -p"!archive_password!" -o"%downloads_dir%" -y -bso0
         ) else (
-            :: Password not provided → 7-Zip запросит пароль у пользователя
+            :: Password not provided → 7-Zip ask for user password
             "!sevenzip_path!" x "!target_file!" -o"%downloads_dir%" -y
         )
 
-        :: Проверка успешности распаковки
+        :: Check unarchiving success
         if %ERRORLEVEL% equ 0 (
             echo Extraction complete.
         ) else (
@@ -100,7 +100,7 @@ if exist "!target_file!" (
         )
 
     ) else (
-        :: 7-Zip не найден → запускаем SFX как раньше
+        :: 7-Zip not found → run SFX
         echo 7-Zip not found. Launching SFX normally...
         pushd "%downloads_dir%"
         start "" "%filename%"
@@ -117,4 +117,5 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
