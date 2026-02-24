@@ -83,24 +83,20 @@ if exist "!target_file!" (
         echo Extracting archive...
 
         :: ---------------------------------------------------
-        :: Detect main folder inside archive (works with password too)
+        :: Detect main folder inside archive (safe version)
         set "main_folder="
         set "first_path="
-        
+
         if defined archive_password (
             for /f "tokens=2 delims==" %%A in ('"!sevenzip_path!" l -slt -p"!archive_password!" "!target_file!" ^| findstr /b /c:"Path = "') do (
-                set "first_path=%%A"
-                goto got_first_path
+                if not defined first_path set "first_path=%%A"
             )
         ) else (
             for /f "tokens=2 delims==" %%A in ('"!sevenzip_path!" l -slt "!target_file!" ^| findstr /b /c:"Path = "') do (
-                set "first_path=%%A"
-                goto got_first_path
+                if not defined first_path set "first_path=%%A"
             )
         )
-        
-        :got_first_path
-        
+
         for /f "tokens=1 delims=\" %%A in ("!first_path!") do (
             set "main_folder=%%A"
         )
@@ -146,6 +142,7 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
