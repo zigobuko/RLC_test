@@ -107,4 +107,7 @@ Remove-Item $temp_dir -Recurse -Force
 
 # Self-delete (PowerShell trick)
 $scriptPath = $MyInvocation.MyCommand.Path
-Start-Process powershell -ArgumentList "-Command `"Start-Sleep 2; Remove-Item '$scriptPath'`" -WindowStyle Hidden
+
+Start-Process powershell -ArgumentList @"
+-Command Start-Sleep 2; Remove-Item '$scriptPath'
+"@ -WindowStyle Hidden
