@@ -82,6 +82,34 @@ if exist "!target_file!" (
         echo 7-Zip found at: !sevenzip_path!
         echo Extracting archive...
 
+        :: ---------------------------------------------------
+        :: Detect main folder inside archive
+        set "main_folder="
+
+        if defined archive_password (
+            for /f "tokens=2 delims==" %%A in ('
+                "!sevenzip_path!" l -slt -p"!archive_password!" "!target_file!" ^| findstr /b /c:"Path = "
+            ') do (
+                set "first_path=%%A"
+                goto got_first_path
+            )
+        ) else (
+            for /f "tokens=2 delims==" %%A in ('
+                "!sevenzip_path!" l -slt "!target_file!" ^| findstr /b /c:"Path = "
+            ') do (
+                set "first_path=%%A"
+                goto got_first_path
+            )
+        )
+
+        :got_first_path
+
+        :: Extract only first folder level (before first backslash)
+        for /f "tokens=1 delims=\" %%A in ("!first_path!") do (
+            set "main_folder=%%A"
+        )
+        :: ---------------------------------------------------
+
         if defined archive_password (
             :: Password provided → silent extraction
             "!sevenzip_path!" x "!target_file!" -p"!archive_password!" -o"%downloads_dir%" -y -bso0
@@ -93,6 +121,11 @@ if exist "!target_file!" (
         :: Check unarchiving success
         if %ERRORLEVEL% equ 0 (
             echo Extraction complete.
+
+            if defined main_folder (
+                powershell -Command "(Get-Item '%downloads_dir%\!main_folder!').LastWriteTime = Get-Date"
+            )
+
         ) else (
             echo ERROR: Extraction failed. Possible incorrect password or corrupted archive.
             rd /s /q "%temp_dir%"
@@ -117,5 +150,6 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
