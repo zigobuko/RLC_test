@@ -79,39 +79,42 @@ if exist "!target_file!" (
     echo Downloaded successfully.
 
     if defined sevenzip_path (
+
         echo 7-Zip found at: !sevenzip_path!
+        echo Detecting main folder inside archive...
+
+        :: ---------------------------------------------------
+        :: Detect main folder inside archive BEFORE extraction
+        set "main_folder="
+
+        if defined archive_password (
+            for /f "usebackq delims=" %%A in (`!sevenzip_path! l -slt -p"!archive_password!" "!target_file!" ^| findstr /i "Path ="`) do (
+                if not defined main_folder (
+                    set "line=%%A"
+                    set "line=!line:*Path =!"
+                    for /f "delims=\ tokens=1" %%B in ("!line!") do set "main_folder=%%B"
+                )
+            )
+        ) else (
+            for /f "usebackq delims=" %%A in (`!sevenzip_path! l -slt "!target_file!" ^| findstr /i "Path ="`) do (
+                if not defined main_folder (
+                    set "line=%%A"
+                    set "line=!line:*Path =!"
+                    for /f "delims=\ tokens=1" %%B in ("!line!") do set "main_folder=%%B"
+                )
+            )
+        )
+        :: ---------------------------------------------------
+
         echo Extracting archive...
 
-        :: ---------------------------------------------------
-        :: Detect main folder inside archive (safe version)
-        set "main_folder="
-        set "first_path="
-
         if defined archive_password (
-            for /f "tokens=2 delims==" %%A in ('"!sevenzip_path!" l -slt -p"!archive_password!" "!target_file!" ^| findstr /b /c:"Path = "') do (
-                if not defined first_path set "first_path=%%A"
-            )
-        ) else (
-            for /f "tokens=2 delims==" %%A in ('"!sevenzip_path!" l -slt "!target_file!" ^| findstr /b /c:"Path = "') do (
-                if not defined first_path set "first_path=%%A"
-            )
-        )
-
-        for /f "tokens=1 delims=\" %%A in ("!first_path!") do (
-            set "main_folder=%%A"
-        )
-        :: ---------------------------------------------------
-
-        if defined archive_password (
-            :: Password provided → silent extraction
             "!sevenzip_path!" x "!target_file!" -p"!archive_password!" -o"%downloads_dir%" -y -bso0
         ) else (
-            :: Password not provided → 7-Zip ask for user password
             "!sevenzip_path!" x "!target_file!" -o"%downloads_dir%" -y
         )
 
-        :: Check unarchiving success
-        if %ERRORLEVEL% equ 0 (
+        if !ERRORLEVEL! equ 0 (
             echo Extraction complete.
 
             if defined main_folder (
@@ -119,13 +122,12 @@ if exist "!target_file!" (
             )
 
         ) else (
-            echo ERROR: Extraction failed. Possible incorrect password or corrupted archive.
+            echo ERROR: Extraction failed.
             rd /s /q "%temp_dir%"
             exit /b 1
         )
 
     ) else (
-        :: 7-Zip not found → run SFX
         echo 7-Zip not found. Launching SFX normally...
         pushd "%downloads_dir%"
         start "" "%filename%"
@@ -142,6 +144,7 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
