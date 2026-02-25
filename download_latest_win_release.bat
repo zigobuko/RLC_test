@@ -100,11 +100,8 @@ if exist "!target_file!" (
         :: Detect the only top-level folder inside extract_dir
         set "main_folder="
         for /f "delims=" %%D in ('dir "!extract_dir!" /ad /b 2^>nul') do (
-            set "main_folder=%%D"
-            goto :folder_found
+            if not defined main_folder set "main_folder=%%D"
         )
-    
-    :folder_found
         if not defined main_folder (
             echo ERROR: No folder found inside archive.
             rd /s /q "!extract_dir!"
@@ -146,5 +143,6 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
