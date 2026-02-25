@@ -141,12 +141,13 @@ if exist "!target_file!" (
 :: Cleanup
 rd /s /q "%temp_dir%"
 
-echo Done!
+echo "Done!"
 
 :: Self-delete this script
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
