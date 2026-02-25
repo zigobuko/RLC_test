@@ -50,13 +50,6 @@ for %%F in ("!download_url!") do set "filename=%%~nxF"
 set "downloads_dir=%USERPROFILE%\Downloads"
 set "target_file=%downloads_dir%\%filename%"
 
-:: Check if file exists
-if exist "!target_file!" (
-    echo File already exists in Downloads: !filename!
-    rd /s /q "%temp_dir%"
-    exit /b 0
-)
-
 :: Download EXE
 echo Downloading !filename!...
 curl -sSL "!download_url!" -o "!target_file!"
@@ -171,6 +164,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
