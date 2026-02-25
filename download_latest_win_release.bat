@@ -125,6 +125,10 @@ if exist "!target_file!" (
     
         :: Delete temporary extraction folder
         rd /s /q "!extract_dir!"
+
+        :: Delete the downloaded archive (optional message)
+        del "!target_file!" >nul 2>&1
+
     ) else (
         :: 7-Zip not found → run SFX
         echo 7-Zip not found. Launching SFX normally...
@@ -143,6 +147,7 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
