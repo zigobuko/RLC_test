@@ -81,24 +81,59 @@ if exist "!target_file!" (
     if defined sevenzip_path (
         echo 7-Zip found at: !sevenzip_path!
         echo Extracting archive...
-
+    
+        :: Create extraction folder based on archive name (without extension)
+        for %%F in ("!filename!") do set "archive_name=%%~nF"
+        set "extract_dir=%downloads_dir%\!archive_name!"
+        mkdir "!extract_dir!" >nul 2>&1
+    
+        :: Extract archive into that folder
         if defined archive_password (
-            :: Password provided → silent extraction
-            "!sevenzip_path!" x "!target_file!" -p"!archive_password!" -o"%downloads_dir%" -y -bso0
+            "!sevenzip_path!" x "!target_file!" -p"!archive_password!" -o"!extract_dir!" -y -bso0
         ) else (
-            :: Password not provided → 7-Zip ask for user password
-            "!sevenzip_path!" x "!target_file!" -o"%downloads_dir%" -y
+            "!sevenzip_path!" x "!target_file!" -o"!extract_dir!" -y
         )
-
-        :: Check unarchiving success
-        if %ERRORLEVEL% equ 0 (
-            echo Extraction complete.
-        ) else (
-            echo ERROR: Extraction failed. Possible incorrect password or corrupted archive.
+    
+        if errorlevel 1 (
+            echo ERROR: Extraction failed.
+            rd /s /q "%extract_dir%"
             rd /s /q "%temp_dir%"
             exit /b 1
         )
-
+    
+        echo Extraction complete.
+    
+        :: Detect the only top-level folder inside extract_dir
+        set "main_folder="
+        for /f "delims=" %%D in ('dir "!extract_dir!" /ad /b 2^>nul') do (
+            set "main_folder=%%D"
+            goto :folder_found
+        )
+    
+    :folder_found
+        if not defined main_folder (
+            echo ERROR: No folder found inside archive.
+            rd /s /q "!extract_dir!"
+            rd /s /q "%temp_dir%"
+            exit /b 1
+        )
+    
+        echo Found main folder: !main_folder!
+    
+        :: Update Date Modified to current time
+        powershell -command "(Get-Item '!extract_dir!\!main_folder!').LastWriteTime = Get-Date"
+    
+        :: Move folder to Downloads
+        move "!extract_dir!\!main_folder!" "!downloads_dir!\" >nul
+        if errorlevel 1 (
+            echo ERROR: Failed to move folder.
+            rd /s /q "!extract_dir!"
+            rd /s /q "%temp_dir%"
+            exit /b 1
+        )
+    
+        :: Delete temporary extraction folder
+        rd /s /q "!extract_dir!"
     ) else (
         :: 7-Zip not found → run SFX
         echo 7-Zip not found. Launching SFX normally...
@@ -117,3 +152,4 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
+
