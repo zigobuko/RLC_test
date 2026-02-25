@@ -89,7 +89,7 @@ if exist "!target_file!" (
         )
     
         if errorlevel 1 (
-            echo ERROR: Extraction failed.
+            echo ERROR: Extraction failed. Possible causes: wrong password or corrupt archive.
             rd /s /q "%extract_dir%"
             rd /s /q "%temp_dir%"
             exit /b 1
@@ -147,6 +147,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
