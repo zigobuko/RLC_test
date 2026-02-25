@@ -57,28 +57,22 @@ echo Downloading !filename!...
 curl -sSL "!download_url!" -o "!target_file!"
 
 :: ---------------------------------------------------
-:: Detect 7-Zip installation path (Windows 10/11)
 set "sevenzip_path="
 
-:: Check 64-bit registry
 for /f "tokens=2*" %%A in ('reg query "HKLM\SOFTWARE\7-Zip" /v Path 2^>nul') do (
-    set "sevenzip_path=%%B\7z.exe"
+    set "sevenzip_path=%%B"
 )
 
-:: If not found, check 32-bit 7-Zip on 64-bit Windows
-if not defined sevenzip_path (
-    for /f "tokens=2*" %%A in ('reg query "HKLM\SOFTWARE\WOW6432Node\7-Zip" /v Path 2^>nul') do (
-        set "sevenzip_path=%%B\7z.exe"
-    )
-)
+if defined sevenzip_path set "sevenzip_path=%sevenzip_path%\7z.exe"
 
+if not exist "%sevenzip_path%" set "sevenzip_path="
 :: ---------------------------------------------------
 
 :: Check and process
 if exist "!target_file!" (
     echo Downloaded successfully.
 
-    if defined sevenzip_path (
+    if exist "!sevenzip_path!" (
         echo 7-Zip found at: !sevenzip_path!
         echo Extracting archive...
     
@@ -152,4 +146,5 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
