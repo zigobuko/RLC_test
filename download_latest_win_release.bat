@@ -107,7 +107,7 @@ if exist "!target_file!" (
     
         :: Extract archive into that folder
         if defined archive_password (
-            "!sevenzip_path!" x "!target_file!" -p"!archive_password!" -o"!extract_dir!" -y -bso0
+            "!sevenzip_path!" x "!target_file!" -p"!archive_password!" -o"!extract_dir!" -y -bso0 -bse0
         ) else (
             "!sevenzip_path!" x "!target_file!" -o"!extract_dir!" -y
         )
@@ -171,6 +171,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
