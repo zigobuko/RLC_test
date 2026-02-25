@@ -16,16 +16,6 @@ mkdir "%temp_dir%" >nul 2>&1
 
 :: Download latest release info
 curl -s https://api.github.com/repos/%owner%/%repo%/releases/latest > "%temp_dir%\release.json"
-if errorlevel 1 (
-    echo ERROR: Failed to fetch release info from GitHub.
-    rd /s /q "%temp_dir%"
-    exit /b 1
-)
-findstr "tag_name" "%temp_dir%\release.json" >nul || (
-    echo ERROR: Invalid response from GitHub (maybe rate limited or repo not found).
-    rd /s /q "%temp_dir%"
-    exit /b 1
-)
 
 :: Find first .exe containing "win"
 set "download_url="
@@ -168,14 +158,5 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
-
-
-
-
-
-
-
-
-
 
 
