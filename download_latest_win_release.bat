@@ -55,17 +55,6 @@ if exist "!target_file!" (
 :: Download EXE
 echo Downloading !filename!...
 curl -sSL "!download_url!" -o "!target_file!"
-if errorlevel 1 (
-    echo ERROR: Download failed.
-    del "!target_file!" 2>nul
-    rd /s /q "%temp_dir%"
-    exit /b 1
-)
-if not exist "!target_file!" (
-    echo ERROR: Downloaded file not found.
-    rd /s /q "%temp_dir%"
-    exit /b 1
-)
 
 :: ---------------------------------------------------
 set "sevenzip_path="
@@ -100,7 +89,7 @@ if exist "!target_file!" (
         )
     
         if errorlevel 1 (
-            echo ERROR: Extraction failed. Possible causes: wrong password or corrupt archive.
+            echo ERROR: Extraction failed.
             rd /s /q "%extract_dir%"
             rd /s /q "%temp_dir%"
             exit /b 1
