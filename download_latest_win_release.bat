@@ -96,7 +96,7 @@ if exist "!target_file!" (
         :: Create extraction folder based on archive name (without extension)
         for %%F in ("!filename!") do set "archive_name=%%~nF"
         set "extract_dir=%downloads_dir%\!archive_name!"
-        mkdir "!extract_dir!" >nul 2>&1
+        rmdir /s /q "!extract_dir!" 2>nul & mkdir "!extract_dir!" >nul 2>&1
     
         :: Extract archive into that folder
         if defined archive_password (
@@ -164,6 +164,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
