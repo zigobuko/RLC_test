@@ -109,8 +109,6 @@ if exist "!target_file!" (
             exit /b 1
         )
     
-        echo Found main folder: !main_folder!
-    
         :: Update Date Modified to current time
         powershell -command "(Get-Item '!extract_dir!\!main_folder!').LastWriteTime = Get-Date"
     
@@ -147,6 +145,7 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
