@@ -74,13 +74,7 @@ if not defined sevenzip_path (
 
 :: ---------------------------------------------------
 
-:: Extract filename without extension
-for %%F in ("!filename!") do set "archive_name=%%~nF"
-
-:: Create temp extraction folder inside Downloads
-set "extract_dir=%downloads_dir%\!archive_name!"
-mkdir "!extract_dir!" >nul 2>&1
-
+:: Check and process
 if exist "!target_file!" (
     echo Downloaded successfully.
 
@@ -89,45 +83,24 @@ if exist "!target_file!" (
         echo Extracting archive...
 
         if defined archive_password (
-            "!sevenzip_path!" x "!target_file!" -p"!archive_password!" -o"!extract_dir!" -y -bso0
+            :: Password provided → silent extraction
+            "!sevenzip_path!" x "!target_file!" -p"!archive_password!" -o"%downloads_dir%" -y -bso0
         ) else (
-            "!sevenzip_path!" x "!target_file!" -o"!extract_dir!" -y
+            :: Password not provided → 7-Zip ask for user password
+            "!sevenzip_path!" x "!target_file!" -o"%downloads_dir%" -y
         )
 
-        if %ERRORLEVEL% neq 0 (
-            echo ERROR: Extraction failed.
+        :: Check unarchiving success
+        if %ERRORLEVEL% equ 0 (
+            echo Extraction complete.
+        ) else (
+            echo ERROR: Extraction failed. Possible incorrect password or corrupted archive.
             rd /s /q "%temp_dir%"
             exit /b 1
         )
 
-        echo Extraction complete.
-
-        :: Detect main extracted folder (first directory inside extract_dir)
-        for /f "delims=" %%D in ('dir "!extract_dir!" /ad /b') do (
-            set "main_folder=%%D"
-            goto found_main
-        )
-
-        :found_main
-
-        if not defined main_folder (
-            echo ERROR: No main folder found inside archive.
-            exit /b 1
-        )
-
-        set "main_path=!extract_dir!\!main_folder!"
-
-        :: Update Date Modified to current time
-        copy /b "!main_path!"+"",, >nul 2>&1
-
-        :: Move main folder to Downloads root
-        move "!main_path!" "%downloads_dir%" >nul
-
-        :: Delete temporary extraction folder
-        rd /s /q "!extract_dir!"
-
-        echo Done.
     ) else (
+        :: 7-Zip not found → run SFX
         echo 7-Zip not found. Launching SFX normally...
         pushd "%downloads_dir%"
         start "" "%filename%"
@@ -144,5 +117,3 @@ rd /s /q "%temp_dir%"
 start "" cmd /c del "%~f0"
 
 exit /b
-
-
