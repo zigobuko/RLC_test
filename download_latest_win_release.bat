@@ -75,13 +75,21 @@ if not exist "!target_file!" (
 :: ---------------------------------------------------
 set "sevenzip_path="
 
-for /f "tokens=2*" %%A in ('reg query "HKLM\SOFTWARE\7-Zip" /v Path 2^>nul') do (
-    set "sevenzip_path=%%B"
+:: Check HKLM
+for /f "tokens=2*" %%A in ('reg query "HKLM\SOFTWARE\7-Zip" /v Path 2^>nul') do set "sevenzip_path=%%B"
+:: If not found, check HKCU
+if not defined sevenzip_path for /f "tokens=2*" %%A in ('reg query "HKCU\SOFTWARE\7-Zip" /v Path 2^>nul') do set "sevenzip_path=%%B"
+:: Fallback to common install locations
+if not defined sevenzip_path (
+    if exist "%ProgramFiles%\7-Zip\7z.exe" set "sevenzip_path=%ProgramFiles%\7-Zip\7z.exe"
+    if exist "%ProgramFiles(x86)%\7-Zip\7z.exe" set "sevenzip_path=%ProgramFiles(x86)%\7-Zip\7z.exe"
 )
-
-if defined sevenzip_path set "sevenzip_path=%sevenzip_path%\7z.exe"
-
-if not exist "%sevenzip_path%" set "sevenzip_path="
+:: If we have a path from registry, append 7z.exe and clean trailing backslash
+if defined sevenzip_path (
+    if "!sevenzip_path:~-1!"=="\" set "sevenzip_path=!sevenzip_path:~0,-1!"
+    set "sevenzip_path=!sevenzip_path!\7z.exe"
+)
+if not exist "!sevenzip_path!" set "sevenzip_path="
 :: ---------------------------------------------------
 
 :: Check and process
@@ -163,6 +171,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
