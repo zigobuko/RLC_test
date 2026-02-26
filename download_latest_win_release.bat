@@ -118,6 +118,9 @@ if exist "!target_file!" (
     
         :: Update Date Modified to current time
         powershell -command "(Get-Item '!extract_dir!\!main_folder!').LastWriteTime = Get-Date"
+
+        :: Get current timestamp (yyyyMMddHHmmss)
+        for /f "usebackq delims=" %%T in (`powershell -command "Get-Date -Format 'yyyyMMddHHmmss'"`) do set "timestamp=%%T"
     
         :: Move folder to Downloads
         if not exist "!downloads_dir!\!main_folder!" (
@@ -129,7 +132,7 @@ if exist "!target_file!" (
                 exit /b 1
             )
         ) else (
-            move "!extract_dir!\!main_folder!" "!downloads_dir!\!main_folder!_0000" >nul
+            move "!extract_dir!\!main_folder!" "!downloads_dir!\!main_folder!_!timestamp!" >nul
             if errorlevel 1 (
                 echo ERROR: Failed to move folder.
                 rd /s /q "!extract_dir!"
@@ -164,4 +167,5 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
