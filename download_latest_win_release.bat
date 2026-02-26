@@ -145,7 +145,7 @@ if exist "!target_file!" (
         echo Moving: "!extract_dir!\!main_folder!" -> "!dest_path!"
         
         :: Perform the move
-        move "!extract_dir!\!main_folder!" "!dest_path!" >nul
+        move "!extract_dir!\!main_folder!" "!dest_path!" >nul 2>&1
         if errorlevel 1 (
             echo ERROR: Failed to move folder.
             echo Source: "!extract_dir!\!main_folder!"
@@ -181,6 +181,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
