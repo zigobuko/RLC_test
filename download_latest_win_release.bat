@@ -123,8 +123,12 @@ if exist "!target_file!" (
         :: Get current timestamp in yyyymmddhhmmss format
         for /f "usebackq delims=" %%T in (`powershell -command "Get-Date -Format 'yyyyMMddHHmmss'"`) do set "timestamp=%%T"
 
+        echo DEBUG: Before set dest_base
         set "dest_base=%downloads_dir%\!main_folder!"
+        echo DEBUG: After set dest_base
+        echo DEBUG: Before set new_name
         set "new_name=!main_folder!"
+        echo DEBUG: Before set new_name
         
         if exist "!dest_base!" (
             set "new_name=!main_folder!_!timestamp!"
@@ -132,7 +136,9 @@ if exist "!target_file!" (
         )
         
         :: Build full destination path
+        echo DEBUG: Before set dest_path
         set "dest_path=%downloads_dir%\!new_name!"
+        echo DEBUG: After set dest_path
         
         :: Debug output – shows the exact move command before execution
         echo Moving: "!extract_dir!\!main_folder!" -> "!dest_path!"
@@ -174,6 +180,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
