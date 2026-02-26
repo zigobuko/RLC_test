@@ -120,12 +120,22 @@ if exist "!target_file!" (
         powershell -command "(Get-Item '!extract_dir!\!main_folder!').LastWriteTime = Get-Date"
     
         :: Move folder to Downloads
-        move "!extract_dir!\!main_folder!" "!downloads_dir!\" >nul
-        if errorlevel 1 (
-            echo ERROR: Failed to move folder.
-            rd /s /q "!extract_dir!"
-            rd /s /q "%temp_dir%"
-            exit /b 1
+        if not exist "!downloads_dir!\!main_folder!" (
+            move "!extract_dir!\!main_folder!" "!downloads_dir!\" >nul
+            if errorlevel 1 (
+                echo ERROR: Failed to move folder.
+                rd /s /q "!extract_dir!"
+                rd /s /q "%temp_dir%"
+                exit /b 1
+            )
+        ) else (
+            move "!extract_dir!\!main_folder!" "!downloads_dir!\!main_folder!_0000" >nul
+            if errorlevel 1 (
+                echo ERROR: Failed to move folder.
+                rd /s /q "!extract_dir!"
+                rd /s /q "%temp_dir%"
+                exit /b 1
+            )
         )
     
         :: Delete temporary extraction folder
@@ -154,3 +164,4 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
