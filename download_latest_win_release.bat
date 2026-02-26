@@ -135,7 +135,7 @@ if exist "!target_file!" (
         set "dest_path=%downloads_dir%\!new_name!"
         
         :: Debug output – shows the exact move command before execution
-        :: echo Moving: "!extract_dir!\!main_folder!" -> "!dest_path!"
+        echo Moving: "!extract_dir!\!main_folder!" -> "!dest_path!"
         
         :: Perform the move
         move "!extract_dir!\!main_folder!" "!dest_path!" >nul
@@ -149,7 +149,7 @@ if exist "!target_file!" (
         )
     
         :: Delete temporary extraction folder
-        rd /s /q "!extract_dir!"
+        rd /s /q "!extract_dir!" 2>&1
 
         :: Delete the downloaded archive (optional message)
         del "!target_file!" >nul 2>&1
@@ -174,6 +174,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
