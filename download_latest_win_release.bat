@@ -122,7 +122,9 @@ if exist "!target_file!" (
         :: Check for existing folder and rename with timestamp if needed
         :: Get current timestamp in yyyymmddhhmmss format
         echo DEBUG: Before Get current timestamp
-        for /f "usebackq delims=" %%T in (`powershell -command "Get-Date -Format 'yyyyMMddHHmmss'"`) do set "timestamp=%%T"
+        :: for /f "usebackq delims=" %%T in (`powershell -command "Get-Date -Format 'yyyyMMddHHmmss'"`) do set "timestamp=%%T"
+        :: for debug
+        set "timestamp=%%T"
         echo DEBUG: After Get current timestamp
 
         set "dest_base=%downloads_dir%\!main_folder!"
@@ -177,6 +179,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
