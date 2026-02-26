@@ -135,7 +135,7 @@ if exist "!target_file!" (
         set "dest_path=%downloads_dir%\!new_name!"
         
         :: Debug output – shows the exact move command before execution
-        echo Moving: "!extract_dir!\!main_folder!" -> "!dest_path!"
+        :: echo Moving: "!extract_dir!\!main_folder!" -> "!dest_path!"
         
         :: Perform the move
         move "!extract_dir!\!main_folder!" "!dest_path!" >nul
@@ -174,6 +174,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
