@@ -134,18 +134,11 @@ if exist "!target_file!" (
         :: Build full destination path
         set "dest_path=%downloads_dir%\!new_name!"
         
-        :: Optional: check if the timestamped name itself already exists (very unlikely, but safe)
-        if exist "!dest_path!" (
-            echo WARNING: Destination "!dest_path!" already exists. Appending a random number.
-            set "new_name=!new_name!_!RANDOM!"
-            set "dest_path=%downloads_dir%\!new_name!"
-        )
-        
         :: Debug output – shows the exact move command before execution
         echo Moving: "!extract_dir!\!main_folder!" -> "!dest_path!"
         
         :: Perform the move
-        move "!extract_dir!\!main_folder!" "!dest_path!" >nul 2>&1
+        move "!extract_dir!\!main_folder!" "!dest_path!" >nul
         if errorlevel 1 (
             echo ERROR: Failed to move folder.
             echo Source: "!extract_dir!\!main_folder!"
@@ -181,6 +174,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
