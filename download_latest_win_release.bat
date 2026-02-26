@@ -123,22 +123,13 @@ if exist "!target_file!" (
         for /f "usebackq delims=" %%T in (`powershell -command "Get-Date -Format 'yyyyMMddHHmmss'"`) do set "timestamp=%%T"
     
         :: Move folder to Downloads
-        if not exist "!downloads_dir!\!main_folder!" (
-            move "!extract_dir!\!main_folder!" "!downloads_dir!\" >nul
-            if errorlevel 1 (
-                echo ERROR: Failed to move folder.
-                rd /s /q "!extract_dir!"
-                rd /s /q "%temp_dir%"
-                exit /b 1
-            )
-        ) else (
-            move "!extract_dir!\!main_folder!" "!downloads_dir!\!main_folder!_!timestamp!" >nul
-            if errorlevel 1 (
-                echo ERROR: Failed to move folder.
-                rd /s /q "!extract_dir!"
-                rd /s /q "%temp_dir%"
-                exit /b 1
-            )
+        set "dest=!downloads_dir!\!main_folder!"
+        if exist "!dest!" set "dest=!dest!_!timestamp!"
+        
+        move "!extract_dir!\!main_folder!" "!dest!" >nul || (
+            echo ERROR: Failed to move folder.
+            rd /s /q "!extract_dir!" "%temp_dir%"
+            exit /b 1
         )
     
         :: Delete temporary extraction folder
@@ -167,5 +158,6 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
