@@ -118,43 +118,18 @@ if exist "!target_file!" (
     
         :: Update Date Modified to current time
         powershell -command "(Get-Item '!extract_dir!\!main_folder!').LastWriteTime = Get-Date"
-
-        :: Check for existing folder and rename with timestamp if needed
-        :: Get current timestamp in yyyymmddhhmmss format
-        echo DEBUG: Before Get current timestamp
-        :: for /f "usebackq delims=" %%T in (`powershell -command "Get-Date -Format 'yyyyMMddHHmmss'"`) do set "timestamp=%%T"
-        :: for debug
-        set "timestamp=%%T"
-        echo DEBUG: After Get current timestamp
-
-        set "dest_base=%downloads_dir%\!main_folder!"
-        set "new_name=!main_folder!"
-        
-        if exist "!dest_base!" (
-            set "new_name=!main_folder!_!timestamp!"
-            echo Folder !main_folder! already exists. Will rename to !new_name!.
-        )
-        
-        :: Build full destination path
-        set "dest_path=%downloads_dir%\!new_name!"
-
-        
-        :: Debug output – shows the exact move command before execution
-        echo Moving: "!extract_dir!\!main_folder!" -> "!dest_path!"
-        
-        :: Perform the move
-        move "!extract_dir!\!main_folder!" "!dest_path!" >nul
+    
+        :: Move folder to Downloads
+        move "!extract_dir!\!main_folder!" "!downloads_dir!\" >nul
         if errorlevel 1 (
             echo ERROR: Failed to move folder.
-            echo Source: "!extract_dir!\!main_folder!"
-            echo Destination: "!dest_path!"
             rd /s /q "!extract_dir!"
             rd /s /q "%temp_dir%"
             exit /b 1
         )
     
         :: Delete temporary extraction folder
-        rd /s /q "!extract_dir!" 2>&1
+        rd /s /q "!extract_dir!"
 
         :: Delete the downloaded archive (optional message)
         del "!target_file!" >nul 2>&1
@@ -179,23 +154,3 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
