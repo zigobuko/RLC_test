@@ -24,21 +24,11 @@ if errorlevel 1 (
 
 :: Find first .exe containing "win"
 set "download_url="
-for /f "delims=" %%A in ('findstr /i "browser_download_url.*win.*\.exe" "%temp_dir%\release.json"') do (
-    set "line=%%A"
-    set "line=!line:*https://=https://!"
-    set "download_url=!line:"=!"
-    goto found_url
-)
-
-:found_url
-
-:: Clean up JSON
-del "%temp_dir%\release.json"
+for /f "usebackq delims=" %%i in (`powershell -command "try { $url = (Invoke-RestMethod -Uri 'https://api.github.com/repos/%owner%/%repo%/releases/latest').assets | Where-Object { $_.name -match 'win.*\.exe$' } | Select-Object -First 1 -ExpandProperty browser_download_url; if ($url) { Write-Output $url } else { exit 1 } } catch { exit 1 }"`) do set "download_url=%%i"
 
 :: Check if download URL was found
 if not defined download_url (
-    echo No Windows EXE found in latest release.
+    echo No Windows EXE found in latest release, or GitHub request failed.
     rd /s /q "%temp_dir%"
     exit /b 1
 )
@@ -164,6 +154,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
