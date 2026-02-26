@@ -80,7 +80,7 @@ if exist "!target_file!" (
     echo Downloaded successfully.
 
     if exist "!sevenzip_path!" (
-        echo 7-Zip found at: !sevenzip_path!
+        echo 7-Zip found.
         echo Extracting archive...
     
         :: Create extraction folder based on archive name (without extension)
@@ -154,6 +154,7 @@ echo Done.
 start "" cmd /c del "%~f0"
 
 exit /b
+
 
 
 
